@@ -1,11 +1,143 @@
 from datetime import date
 from sqlalchemy import func
-
 from models.database import db, Expense, Budget
-
-
 def _safe_divide(a, b):
     return (a / b) if b else 0
+
+
+def get_month_snapshot():
+    """Return key financial metrics for the current month."""
+
+    today = date.today()
+
+    monthly_expense = (
+        db.session.query(func.coalesce(func.sum(Expense.amount), 0))
+        .filter(
+            Expense.transaction_type == "Expense",
+            func.extract("year", Expense.date) == today.year,
+            func.extract("month", Expense.date) == today.month,
+        )
+        .scalar()
+        or 0
+    )
+
+    monthly_income = (
+        db.session.query(func.coalesce(func.sum(Expense.amount), 0))
+        .filter(
+            Expense.transaction_type == "Income",
+            func.extract("year", Expense.date) == today.year,
+            func.extract("month", Expense.date) == today.month,
+        )
+        .scalar()
+        or 0
+    )
+
+    days_elapsed = max(today.day, 1)
+    average_daily_spending = round(monthly_expense / days_elapsed, 2)
+
+    today_spending = (
+        db.session.query(func.coalesce(func.sum(Expense.amount), 0))
+        .filter(
+            Expense.transaction_type == "Expense",
+            Expense.date == today,
+        )
+        .scalar()
+        or 0
+    )
+
+    largest_expense = (
+        db.session.query(Expense)
+        .filter(
+            Expense.transaction_type == "Expense",
+            func.extract("year", Expense.date) == today.year,
+            func.extract("month", Expense.date) == today.month,
+        )
+        .order_by(Expense.amount.desc())
+        .first()
+    )
+
+    total_budget = (
+        db.session.query(func.coalesce(func.sum(Budget.monthly_budget), 0))
+        .scalar()
+        or 0
+    )
+
+    top_category = (
+        db.session.query(
+            Expense.category,
+            func.sum(Expense.amount).label("total")
+        )
+        .filter(
+            Expense.transaction_type == "Expense",
+            func.extract("year", Expense.date) == today.year,
+            func.extract("month", Expense.date) == today.month,
+        )
+        .group_by(Expense.category)
+        .order_by(func.sum(Expense.amount).desc())
+        .first()
+    )
+
+    return {
+        "average_daily_spending": average_daily_spending,
+        "today_spending": today_spending,
+        "largest_expense": largest_expense.amount if largest_expense else 0,
+        "largest_expense_description": largest_expense.description if largest_expense and largest_expense.description else "-",
+        "budget_remaining": max(total_budget - monthly_expense, 0),
+        "monthly_savings": monthly_income - monthly_expense,
+        "top_category": top_category.category if top_category else "-",
+        "top_category_amount": top_category.total if top_category else 0,
+    }
+
+
+def get_category_performance():
+    """Return budget performance for each category."""
+
+    performance = []
+
+    budgets = Budget.query.order_by(Budget.category.asc()).all()
+
+    today = date.today()
+
+    for budget in budgets:
+        spent = (
+            db.session.query(func.coalesce(func.sum(Expense.amount), 0))
+            .filter(
+                Expense.transaction_type == "Expense",
+                Expense.category == budget.category,
+                func.extract("year", Expense.date) == today.year,
+                func.extract("month", Expense.date) == today.month,
+            )
+            .scalar()
+            or 0
+        )
+
+        budget_amount = float(budget.monthly_budget)
+        spent_amount = float(spent)
+        remaining = max(budget_amount - spent_amount, 0)
+        usage = round(_safe_divide(spent_amount, budget_amount) * 100, 1)
+
+        if usage > 100:
+            status = "Over Budget"
+            color = "danger"
+        elif usage >= 80:
+            status = "Near Limit"
+            color = "warning"
+        else:
+            status = "Healthy"
+            color = "success"
+
+        performance.append({
+            "category": budget.category,
+            "budget": budget_amount,
+            "spent": spent_amount,
+            "remaining": remaining,
+            "usage": min(usage, 100),
+            "actual_usage": usage,
+            "status": status,
+            "color": color,
+        })
+
+    return performance
 
 
 def generate_financial_insights():

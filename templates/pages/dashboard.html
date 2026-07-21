@@ -3,10 +3,11 @@
 {% block title %}Dashboard | Expense Tracker{% endblock %}
 
 {% block content %}
-<div class="container py-4">
+<div class="container py-4 fade-in-page">
 
-    <div class="card border-0 shadow-sm mb-5 overflow-hidden bg-white">
+    <div class="card border-0 shadow-sm mb-5 overflow-hidden bg-white dashboard-card">
         <div class="card-body p-5">
+            {% if transaction_count|default(0) > 0 %}
             <div class="row align-items-center">
                 <div class="col-lg-8">
                     <span class="badge bg-primary-subtle text-primary mb-3 px-3 py-2">
@@ -40,7 +41,7 @@
                         {% set badge_class = 'bg-danger-subtle text-danger' %}
                     {% endif %}
 
-                    <div class="card border-0 shadow mt-4 overflow-hidden bg-white">
+                    <div class="card border-0 shadow mt-4 overflow-hidden bg-white dashboard-card">
                         <div class="d-flex">
                             <div class="{{ border_class }} border-start border-5"></div>
 
@@ -93,122 +94,355 @@
                     </a>
                 </div>
             </div>
+            {% else %}
+            <div class="row justify-content-center text-center py-4">
+                <div class="col-lg-8">
+                    <div class="display-3 text-primary mb-3">
+                        <i class="bi bi-wallet2"></i>
+                    </div>
+                    <h1 class="display-5 fw-bold mb-3">Welcome to FinanceFlow</h1>
+                    <p class="lead text-muted mb-4">
+                        Track your income, manage your expenses, monitor budgets, and receive personalized financial insights—all in one place.
+                    </p>
+
+                    <div class="d-flex justify-content-center flex-wrap gap-3">
+                        <a href="{{ url_for('expenses.add_expense') }}" class="btn btn-primary rounded-pill px-4 py-2">
+                            <i class="bi bi-plus-circle me-2"></i>Add First Transaction
+                        </a>
+
+                        <a href="{{ url_for('budget.list_budgets') }}" class="btn btn-outline-primary rounded-pill px-4 py-2">
+                            <i class="bi bi-wallet2 me-2"></i>Create Budget
+                        </a>
+                    </div>
+
+                    <div class="row g-3 mt-5 text-start">
+                        <div class="col-md-4">
+                            <div class="border rounded-4 p-3 h-100 bg-light">
+                                <i class="bi bi-bar-chart-line text-primary fs-3"></i>
+                                <h6 class="fw-bold mt-3">Track Spending</h6>
+                                <small class="text-muted">Record every income and expense effortlessly.</small>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="border rounded-4 p-3 h-100 bg-light">
+                                <i class="bi bi-pie-chart text-primary fs-3"></i>
+                                <h6 class="fw-bold mt-3">Visual Analytics</h6>
+                                <small class="text-muted">Understand your finances through interactive charts.</small>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="border rounded-4 p-3 h-100 bg-light">
+                                <i class="bi bi-lightbulb text-primary fs-3"></i>
+                                <h6 class="fw-bold mt-3">Smart Insights</h6>
+                                <small class="text-muted">Receive intelligent recommendations as your data grows.</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
         </div>
     </div>
 
     <div class="row g-4 mb-4">
         <div class="col-md-6 col-xl-3">
-            <div class="card shadow-sm border-0 h-100 stat-card">
+            <div class="card shadow-sm border-0 h-100 stat-card dashboard-card">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center">
                         <small class="text-secondary">Net Balance</small>
                         <i class="bi bi-wallet2 text-primary fs-4"></i>
                     </div>
-                    <h2 class="fw-bold text-primary mt-3">₹{{ '{:,.0f}'.format(total_balance|float) }}</h2>
+                    <h2 class="fw-bold text-primary mt-3 counter-value" data-target="{{ total_balance|float }}">₹{{ '{:,.0f}'.format(total_balance|float) }}</h2>
                     <small class="text-muted">Available Funds</small>
                 </div>
             </div>
         </div>
 
         <div class="col-md-6 col-xl-3">
-            <div class="card shadow-sm border-0 h-100 stat-card">
+            <div class="card shadow-sm border-0 h-100 stat-card dashboard-card">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center">
                         <small class="text-secondary">Income</small>
                         <i class="bi bi-arrow-down-circle text-success fs-4"></i>
                     </div>
-                    <h2 class="fw-bold text-success mt-3">₹{{ '{:,.0f}'.format(total_income|float) }}</h2>
+                    <h2 class="fw-bold text-success mt-3 counter-value" data-target="{{ total_income|float }}">₹{{ '{:,.0f}'.format(total_income|float) }}</h2>
                     <small class="text-muted">All income recorded</small>
                 </div>
             </div>
         </div>
 
         <div class="col-md-6 col-xl-3">
-            <div class="card shadow-sm border-0 h-100 stat-card">
+            <div class="card shadow-sm border-0 h-100 stat-card dashboard-card">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center">
                         <small class="text-secondary">Expenses</small>
                         <i class="bi bi-arrow-up-circle text-danger fs-4"></i>
                     </div>
-                    <h2 class="fw-bold text-danger mt-3">₹{{ '{:,.0f}'.format(total_expense|float) }}</h2>
+                    <h2 class="fw-bold text-danger mt-3 counter-value" data-target="{{ total_expense|float }}">₹{{ '{:,.0f}'.format(total_expense|float) }}</h2>
                     <small class="text-muted">Overall spending</small>
                 </div>
             </div>
         </div>
 
         <div class="col-md-6 col-xl-3">
-            <div class="card shadow-sm border-0 h-100 stat-card">
+            <div class="card shadow-sm border-0 h-100 stat-card dashboard-card">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center">
                         <small class="text-secondary">Total Transactions</small>
                         <i class="bi bi-receipt text-primary fs-4"></i>
                     </div>
-                    <h2 class="fw-bold mt-3">{{ transaction_count|default(0) }}</h2>
+                    <h2 class="fw-bold mt-3 counter-value" data-target="{{ transaction_count|default(0) }}">{{ transaction_count|default(0) }}</h2>
                     <small class="text-muted">Recorded entries</small>
                 </div>
             </div>
         </div>
     </div>
 
+    <div class="mt-5 mb-4">
+        <h3 class="fw-bold mb-1">Financial Snapshot</h3>
+        <p class="text-muted">Key metrics for your current month.</p>
+    </div>
+
+    <div class="row g-4 mb-5">
+        {% if transaction_count|default(0) > 0 %}
+        <div class="col-md-6 col-xl-4">
+            <div class="card border-0 shadow-sm dashboard-card h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <small class="text-secondary">Average Daily Spending</small>
+                        <i class="bi bi-calendar-week text-primary"></i>
+                    </div>
+                    <h3 class="fw-bold mt-3">₹{{ '{:,.0f}'.format(snapshot.average_daily_spending|float) }}</h3>
+                    <small class="text-muted">Based on this month's expenses</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-xl-4">
+            <div class="card border-0 shadow-sm dashboard-card h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <small class="text-secondary">Today's Spending</small>
+                        <i class="bi bi-clock-history text-warning"></i>
+                    </div>
+                    <h3 class="fw-bold mt-3">₹{{ '{:,.0f}'.format(snapshot.today_spending|float) }}</h3>
+                    <small class="text-muted">Recorded today</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-xl-4">
+            <div class="card border-0 shadow-sm dashboard-card h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <small class="text-secondary">Budget Remaining</small>
+                        <i class="bi bi-wallet2 text-success"></i>
+                    </div>
+                    <h3 class="fw-bold mt-3 text-success">₹{{ '{:,.0f}'.format(snapshot.budget_remaining|float) }}</h3>
+                    <small class="text-muted">Across all budgets</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-xl-4">
+            <div class="card border-0 shadow-sm dashboard-card h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <small class="text-secondary">Top Category</small>
+                        <i class="bi bi-pie-chart-fill text-danger"></i>
+                    </div>
+                    <h4 class="fw-bold mt-3">{{ snapshot.top_category }}</h4>
+                    <small class="text-muted">₹{{ '{:,.0f}'.format(snapshot.top_category_amount|float) }} spent</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-xl-4">
+            <div class="card border-0 shadow-sm dashboard-card h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <small class="text-secondary">Largest Expense</small>
+                        <i class="bi bi-credit-card text-primary"></i>
+                    </div>
+                    <h3 class="fw-bold mt-3">₹{{ '{:,.0f}'.format(snapshot.largest_expense|float) }}</h3>
+                    <small class="text-muted">{{ snapshot.largest_expense_description }}</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-xl-4">
+            <div class="card border-0 shadow-sm dashboard-card h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <small class="text-secondary">Monthly Savings</small>
+                        <i class="bi bi-piggy-bank text-success"></i>
+                    </div>
+                    <h3 class="fw-bold mt-3 text-success">₹{{ '{:,.0f}'.format(snapshot.monthly_savings|float) }}</h3>
+                    <small class="text-muted">Income minus expenses</small>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="col-12">
+            <div class="card border-0 shadow-sm dashboard-card">
+                <div class="card-body text-center py-5">
+                    <i class="bi bi-graph-up-arrow display-4 text-primary"></i>
+                    <h4 class="fw-bold mt-3">No Financial Data Yet</h4>
+                    <p class="text-muted mb-4">
+                        Add your first transaction to generate your monthly financial snapshot.
+                    </p>
+                    <a href="{{ url_for('expenses.add_expense') }}" class="btn btn-primary rounded-pill px-4">
+                        <i class="bi bi-plus-circle me-2"></i>Add First Transaction
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="mt-5 mb-4">
+        <h3 class="fw-bold mb-1">Category Performance</h3>
+        <p class="text-muted">Track the performance of each budget category this month.</p>
+    </div>
+
+    <div class="row g-4 mb-5">
+        {% if category_performance %}
+            {% for item in category_performance %}
+            <div class="col-lg-6">
+                <div class="card border-0 shadow-sm dashboard-card h-100">
+                    <div class="card-body">
+
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="fw-bold mb-0">{{ item.category }}</h5>
+                            <span class="badge bg-{{ item.color }}-subtle text-{{ item.color }}">
+                                {{ item.status }}
+                            </span>
+                        </div>
+
+                        <div class="d-flex justify-content-between small text-muted mb-2">
+                            <span>₹{{ '{:,.0f}'.format(item.spent) }} spent</span>
+                            <span>₹{{ '{:,.0f}'.format(item.budget) }} budget</span>
+                        </div>
+
+                        <div class="progress mb-3" style="height:10px;">
+                            <div class="progress-bar progress-animate bg-{{ item.color }}"
+                                 role="progressbar"
+                                 style="width: {{ item.usage }}%;"
+                                 aria-valuenow="{{ item.actual_usage }}"
+                                 aria-valuemin="0"
+                                 aria-valuemax="100"></div>
+                        </div>
+
+                        <div class="d-flex justify-content-between align-items-center">
+                            <small class="text-muted">
+                                Remaining: ₹{{ '{:,.0f}'.format(item.remaining) }}
+                            </small>
+                            <strong>{{ item.actual_usage }}%</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="col-12">
+                <div class="card border-0 shadow-sm dashboard-card">
+                    <div class="card-body text-center py-5">
+                        <i class="bi bi-bullseye display-4 text-primary"></i>
+                        <h4 class="fw-bold mt-3">No Budgets Yet</h4>
+                        <p class="text-muted mb-4">
+                            Create your first monthly budget to start tracking category performance.
+                        </p>
+                        <a href="{{ url_for('budget.list_budgets') }}" class="btn btn-primary rounded-pill px-4">
+                            <i class="bi bi-plus-circle me-2"></i>Create Budget
+                        </a>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+
     <div class="row g-4">
         <div class="col-lg-6">
-            <div class="card shadow-sm border-0">
+            <div class="card shadow-sm border-0 dashboard-card">
                 <div class="card-header bg-white fw-semibold">
                     Income vs Expenses
                     <div class="text-muted small mt-1">Overall financial distribution</div>
                 </div>
                 <div class="card-body">
-                    <canvas
-                        id="incomeExpenseChart"
-                        height="280"
-                        data-income="{{ total_income|default(0) }}"
-                        data-expense="{{ total_expense|default(0) }}">
-                    </canvas>
+                    {% if total_income > 0 or total_expense > 0 %}
+                    <div class="chart-wrapper chart-fade-in">
+                        <canvas
+                            id="incomeExpenseChart"
+                            height="280"
+                            data-income="{{ total_income|default(0) }}"
+                            data-expense="{{ total_expense|default(0) }}">
+                        </canvas>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="bi bi-pie-chart display-5 text-primary"></i>
+                        <h5 class="fw-bold mt-3">No Chart Data</h5>
+                        <p class="text-muted mb-0">Charts will appear after you record income or expenses.</p>
+                    </div>
+                    {% endif %}
                 </div>
             </div>
         </div>
 
         <div class="col-lg-6">
-            <div class="card shadow-sm border-0">
+            <div class="card shadow-sm border-0 dashboard-card">
                 <div class="card-header bg-white fw-semibold">
                     Monthly Spending Trend
                     <div class="text-muted small mt-1">Track expenses over time</div>
                 </div>
                 <div class="card-body">
-                    <canvas
-                        id="monthlyChart"
-                        height="280"
-                        data-labels='{{ monthly_summary["labels"] | tojson }}'
-                        data-values='{{ monthly_summary["values"] | tojson }}'>
-                    </canvas>
+                    {% if monthly_summary['values'] %}
+                    <div class="chart-wrapper chart-fade-in">
+                        <canvas
+                            id="monthlyChart"
+                            height="280"
+                            data-labels='{{ monthly_summary["labels"] | tojson }}'
+                            data-values='{{ monthly_summary["values"] | tojson }}'>
+                        </canvas>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="bi bi-graph-up display-5 text-primary"></i>
+                        <h5 class="fw-bold mt-3">No Monthly Trend</h5>
+                        <p class="text-muted mb-0">Monthly trends will be available once transactions are recorded.</p>
+                    </div>
+                    {% endif %}
                 </div>
             </div>
         </div>
     </div>
     <div class="row g-4 mt-1">
-
-    <div class="col-12">
-        <div class="card shadow-sm border-0">
-
-            <div class="card-header bg-white fw-semibold">
-                Category Breakdown
-                <div class="text-muted small mt-1">Where your money goes</div>
+        <div class="col-12">
+            <div class="card shadow-sm border-0 dashboard-card">
+                <div class="card-header bg-white fw-semibold">
+                    Category Breakdown
+                    <div class="text-muted small mt-1">Where your money goes</div>
+                </div>
+                <div class="card-body">
+                    {% if category_summary['values'] %}
+                    <div class="chart-wrapper chart-fade-in">
+                        <canvas
+                            id="categoryChart"
+                            height="120"
+                            data-labels='{{ category_summary["labels"] | tojson }}'
+                            data-values='{{ category_summary["values"] | tojson }}'>
+                        </canvas>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="bi bi-bar-chart display-5 text-primary"></i>
+                        <h5 class="fw-bold mt-3">No Category Data</h5>
+                        <p class="text-muted mb-0">Category insights will appear after recording expenses.</p>
+                    </div>
+                    {% endif %}
+                </div>
             </div>
-
-            <div class="card-body">
-
-                <canvas
-                    id="categoryChart"
-                    height="120"
-                    data-labels='{{ category_summary["labels"] | tojson }}'
-                    data-values='{{ category_summary["values"] | tojson }}'>
-                </canvas>
-
-            </div>
-
         </div>
-      </div>
-
     </div>
 
     <div class="row g-4 mt-2">
@@ -218,26 +452,53 @@
         </div>
         <!-- Financial Health Card -->
         <div class="col-lg-3">
-            <div class="card border-0 shadow-sm h-100">
+            <div class="card border-0 shadow-sm dashboard-card h-100">
                 <div class="card-body text-center">
                     <small class="text-secondary">Financial Health</small>
-                    <h2 class="fw-bold my-2">{{ financial_health_score }}/100</h2>
-                    {% set _status = health_status %}
-                    {% if _status == 'Excellent' %}
-                        <span class="badge bg-success px-3 py-2">{{ _status }}</span>
-                    {% elif _status == 'Good' %}
-                        <span class="badge bg-primary px-3 py-2">{{ _status }}</span>
-                    {% elif _status == 'Fair' %}
-                        <span class="badge bg-warning text-dark px-3 py-2">{{ _status }}</span>
+
+                    <div class="display-5 fw-bold my-2">{{ financial_health_score }}</div>
+
+                    {% if health_status == 'Excellent' %}
+                        {% set health_color = 'success' %}
+                    {% elif health_status == 'Good' %}
+                        {% set health_color = 'primary' %}
+                    {% elif health_status == 'Fair' %}
+                        {% set health_color = 'warning' %}
                     {% else %}
-                        <span class="badge bg-danger px-3 py-2">{{ _status }}</span>
+                        {% set health_color = 'danger' %}
                     {% endif %}
+
+                    <div class="progress mb-3" style="height:12px; border-radius:20px;">
+                        <div class="progress-bar progress-animate bg-{{ health_color }}"
+                             role="progressbar"
+                             style="width: {{ financial_health_score }}%;"
+                             aria-valuenow="{{ financial_health_score }}"
+                             aria-valuemin="0"
+                             aria-valuemax="100"></div>
+                    </div>
+
+                    <span class="badge bg-{{ health_color }} px-3 py-2 rounded-pill">
+                        {{ health_status }}
+                    </span>
+
+                    <hr>
+
+                    <div class="row text-center g-2">
+                        <div class="col-6">
+                            <small class="text-muted d-block">Savings</small>
+                            <strong>{{ savings_rate }}%</strong>
+                        </div>
+                        <div class="col-6">
+                            <small class="text-muted d-block">Budget</small>
+                            <strong>{{ budget_usage }}%</strong>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
         <!-- Savings Rate Card -->
         <div class="col-lg-3">
-            <div class="card border-0 shadow-sm h-100">
+            <div class="card border-0 shadow-sm dashboard-card h-100">
                 <div class="card-body text-center">
                     <small class="text-secondary">Savings Rate</small>
                     <h2 class="fw-bold text-primary my-2">{{ savings_rate }}%</h2>
@@ -247,12 +508,12 @@
         </div>
         <!-- Budget Usage Card -->
         <div class="col-lg-3">
-            <div class="card border-0 shadow-sm h-100">
+            <div class="card border-0 shadow-sm dashboard-card h-100">
                 <div class="card-body text-center">
                     <small class="text-secondary">Budget Usage</small>
                     <h2 class="fw-bold text-primary my-2">{{ budget_usage }}%</h2>
                     <div class="progress my-2" style="height: 8px;">
-                        <div class="progress-bar bg-primary" role="progressbar"
+                        <div class="progress-bar progress-animate bg-primary" role="progressbar"
                              style="width: {{ [budget_usage,100]|min }}%;" aria-valuenow="{{ budget_usage }}"
                              aria-valuemin="0" aria-valuemax="100"></div>
                     </div>
@@ -261,7 +522,7 @@
         </div>
         <!-- Monthly Savings Card -->
         <div class="col-lg-3">
-            <div class="card border-0 shadow-sm h-100">
+            <div class="card border-0 shadow-sm dashboard-card h-100">
                 <div class="card-body text-center">
                     <small class="text-secondary">Monthly Savings</small>
                     <h2 class="fw-bold text-success my-2">₹{{ '{:,.0f}'.format(monthly_savings|float) }}</h2>
@@ -273,7 +534,58 @@
 
     <div class="row mt-4">
         <div class="col-12">
-            <div class="card border-0 shadow-sm">
+            <div class="card border-0 shadow-sm dashboard-card">
+                <div class="card-header bg-white fw-semibold">
+                    Smart Spending Insights
+                    <div class="text-muted small mt-1">
+                        Personalized observations based on your spending patterns.
+                    </div>
+                </div>
+
+                <div class="card-body">
+                    {% if spending_insights %}
+                        {% for insight in spending_insights %}
+                            {% set border = 'border-primary' %}
+                            {% if insight.type == 'success' %}
+                                {% set border = 'border-success' %}
+                            {% elif insight.type == 'warning' %}
+                                {% set border = 'border-warning' %}
+                            {% elif insight.type == 'danger' %}
+                                {% set border = 'border-danger' %}
+                            {% elif insight.type == 'info' %}
+                                {% set border = 'border-info' %}
+                            {% endif %}
+
+                            <div class="card border-0 shadow-sm mb-3 dashboard-card">
+                                <div class="d-flex">
+                                    <div class="{{ border }} border-start border-5"></div>
+                                    <div class="flex-grow-1 p-3">
+                                        <div class="d-flex align-items-center mb-2">
+                                            <i class="bi {{ insight.icon }} fs-5 me-2"></i>
+                                            <h6 class="fw-bold mb-0">{{ insight.title }}</h6>
+                                        </div>
+                                        <p class="text-muted mb-0">{{ insight.message }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="bi bi-stars display-5 text-primary"></i>
+                            <h5 class="fw-bold mt-3">No Insights Available</h5>
+                            <p class="text-muted mb-0">
+                                Add a few transactions to unlock personalized financial insights.
+                            </p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm dashboard-card">
                 <div class="card-header bg-white fw-semibold">
                     Smart Recommendations
                     <div class="text-muted small mt-1">Generated by the Financial Intelligence Engine</div>
@@ -288,14 +600,20 @@
                     {% endfor %}
                     </ul>
                     {% else %}
-                    <p class="text-muted mb-0">No recommendations available.</p>
+                    <div class="text-center py-4">
+                        <i class="bi bi-lightbulb display-6 text-warning"></i>
+                        <h6 class="fw-bold mt-3">No Recommendations Yet</h6>
+                        <p class="text-muted mb-0">
+                            Continue adding transactions and budgets to receive personalized recommendations.
+                        </p>
+                    </div>
                     {% endif %}
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="card shadow-sm border-0 mt-4">
+            <div class="card shadow-sm border-0 mt-4 dashboard-card">
         <div class="card-header bg-white d-flex justify-content-between align-items-center fw-semibold">
             <div>Recent Transactions</div>
             <a href="{{ url_for('expenses.list_expenses') }}" class="btn btn-outline-primary btn-sm rounded-pill px-3 py-1">View All</a>
@@ -485,5 +803,51 @@ if (categoryCanvas) {
         }
     });
 }
+
+// Fade charts after rendering
+document.querySelectorAll('.chart-fade-in').forEach(chart => {
+    chart.style.opacity = '0';
+    chart.style.transform = 'translateY(10px)';
+    requestAnimationFrame(() => {
+        setTimeout(() => {
+            chart.style.transition = 'opacity .4s ease, transform .4s ease';
+            chart.style.opacity = '1';
+            chart.style.transform = 'translateY(0)';
+        }, 150);
+    });
+});
+
+// Animate KPI counters
+function animateCounter(el) {
+    const target = Number(el.dataset.target || 0);
+    const isCurrency = el.textContent.trim().startsWith('₹');
+    const duration = 800;
+    const start = performance.now();
+
+    function frame(now) {
+        const progress = Math.min((now - start) / duration, 1);
+        const value = Math.floor(progress * target);
+        el.textContent = isCurrency ? '₹' + value.toLocaleString('en-IN') : value.toLocaleString('en-IN');
+        if (progress < 1) requestAnimationFrame(frame);
+    }
+
+    requestAnimationFrame(frame);
+}
+
+document.querySelectorAll('.counter-value').forEach(animateCounter);
+
+// Phase 4 dashboard animations
+window.addEventListener('load', () => {
+    document.querySelectorAll('.dashboard-card').forEach((card, index) => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(12px)';
+
+        setTimeout(() => {
+            card.style.transition = 'opacity .35s ease, transform .35s ease, box-shadow .25s ease';
+            card.style.opacity = '1';
+            card.style.transform = 'translateY(0)';
+        }, index * 40);
+    });
+});
 </script>
 {% endblock %}
